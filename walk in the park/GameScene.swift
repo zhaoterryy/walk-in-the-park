@@ -10,84 +10,135 @@ import SpriteKit
 import os.log
 
 class GameScene: SKScene {
-
-    private let pauseMenu : SKPauseNode
-    private let pauseBtn : SKSpriteNode
+    private let pauseMenu: SKPauseNode
+    private let pauseBtn: SKSpriteNode
+    private let playerCamera: SKCameraNode
+    private let player: SKSpriteNode
+    private let playerRoot: SKNode
+    private let playerGroundCheck: SKNode
+    private let ground: SKSpriteNode
+    private let testWall: SKSpriteNode
+    
+    private var isInAir: Bool = false
+    
+    private let standingTextures : [SKTexture] = [
+        SKTexture(image:#imageLiteral(resourceName: "s1")), SKTexture(image:#imageLiteral(resourceName: "s2")), SKTexture(image:#imageLiteral(resourceName: "s3")),
+        SKTexture(image:#imageLiteral(resourceName: "s4")), SKTexture(image:#imageLiteral(resourceName: "s5")), SKTexture(image:#imageLiteral(resourceName: "s6"))
+    ]
+    private let walkingTextures : [SKTexture] = [
+        SKTexture(image:#imageLiteral(resourceName: "w1")), SKTexture(image:#imageLiteral(resourceName: "w2")), SKTexture(image:#imageLiteral(resourceName: "w3")),
+        SKTexture(image:#imageLiteral(resourceName: "w4")), SKTexture(image:#imageLiteral(resourceName: "w5")), SKTexture(image:#imageLiteral(resourceName: "w6"))
+    ]
+    
+    private struct PhysicsCategory {
+        static let player: UInt32 = 0x01
+        static let worldStatic: UInt32 = 0x02
+        static let playerGroundCheck: UInt32 = 0x04
+    }
     
     required init?(coder aDecoder: NSCoder) {
         pauseMenu = SKPauseNode(coder: aDecoder)!
         pauseBtn = SKSpriteNode(coder: aDecoder)!
+        playerCamera = SKCameraNode(coder: aDecoder)!
+        player = SKSpriteNode(coder: aDecoder)!
+        ground = SKSpriteNode(coder: aDecoder)!
+        testWall = SKSpriteNode(coder: aDecoder)!
+        playerRoot = SKNode(coder: aDecoder)!
+        playerGroundCheck = SKNode(coder: aDecoder)!
         super.init(coder: aDecoder)
     }
     
     override init(size: CGSize) {
         pauseMenu = SKPauseNode()
-//        pauseBtn = SKButtonNode(text: "pause", rectOf: CGSize(width: 140, height: 40), cornerRadius: 10)
         pauseBtn = SKSpriteNode(imageNamed: "MenuButton")
-        
+        playerCamera = SKCameraNode()
+        player = SKSpriteNode(texture: standingTextures[0])
+        ground = SKSpriteNode(color: .brown, size: CGSize(width: 100000, height: 2500))
+        testWall = SKSpriteNode(color: .blue, size:CGSize(width: 600, height: 800))
+        playerRoot = SKNode()
+        playerGroundCheck = SKNode()
         super.init(size: size)
-
-        pauseMenu.position = CGPoint(x: frame.midX, y: frame.midY)
+        
+        backgroundColor = .white
+        physicsWorld.gravity = CGVector(dx: 0.0, dy: -9.8)
+        physicsWorld.contactDelegate = self
+        playerCamera.setScale(10.0)
+        
         pauseMenu.isHidden = true
+        pauseMenu.zPosition = 10
         
-        pauseBtn.position = CGPoint(x: size.width - 45, y: size.height - 45)
         pauseBtn.scale(to: CGSize(width: 50, height: 50))
+        pauseBtn.color = .white
+        pauseBtn.colorBlendFactor = 1.0
+        pauseBtn.zPosition = 5
+
+        playerRoot.position = CGPoint(x: 3750, y: 0)
+        playerRoot.run(SKAction.repeatForever(SKAction.move(by: CGVector(dx: 1000.0, dy: 0.0), duration: 1.0)), withKey: "moving")
+        playerRoot.addChild(player)
+        playerRoot.addChild(playerCamera)
         
-        addChild(pauseMenu)
-        addChild(pauseBtn)
+        player.position = CGPoint(x: 0, y: 0)
+        player.anchorPoint = CGPoint(x: 0.5, y: 0.0)
+        player.run(SKAction.repeatForever(SKAction.animate(with: walkingTextures, timePerFrame: 0.08)), withKey: "standingAni")
+        player.zPosition = -1
+        player.physicsBody = SKPhysicsBody(rectangleOf: player.size, center: CGPoint(x: 0.0, y: player.size.height / 2))
+        player.physicsBody?.categoryBitMask = PhysicsCategory.player
+        player.physicsBody?.collisionBitMask = PhysicsCategory.worldStatic
+        player.physicsBody?.isDynamic = true
+        player.physicsBody?.allowsRotation = false
+        player.physicsBody?.restitution = 0.1
+        player.addChild(playerGroundCheck)
+        
+        playerGroundCheck.position = CGPoint(x: 0, y: 0)
+        playerGroundCheck.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: player.size.width / 2, height: 50.0), center: CGPoint(x: 0.0, y: -25.0))
+        playerGroundCheck.physicsBody?.categoryBitMask = PhysicsCategory.playerGroundCheck
+        playerGroundCheck.physicsBody?.contactTestBitMask = PhysicsCategory.worldStatic
+        playerGroundCheck.physicsBody?.collisionBitMask = 0
+        playerGroundCheck.physicsBody?.isDynamic = true
+        playerGroundCheck.physicsBody?.affectedByGravity = false
+        
+        playerCamera.position = CGPoint(x: 4000, y: 1000)
+        let camMoveAction = SKAction.move(to: CGPoint(x: 2000, y: 1000), duration: 5.0)
+        camMoveAction.timingMode = .easeInEaseOut
+        playerCamera.run(camMoveAction)
+
+        pauseBtn.position = CGPoint(x: 330, y: 168)
+        
+        ground.physicsBody = SKPhysicsBody(rectangleOf: ground.size, center: CGPoint(x: ground.size.width / 2, y: -ground.size.height / 2))
+        ground.position = CGPoint(x: 0.0, y: 0.0)
+        ground.anchorPoint = CGPoint(x: 0.0, y: 1.0)
+        ground.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
+        ground.physicsBody?.isDynamic = false
+
+        testWall.physicsBody = SKPhysicsBody(rectangleOf: testWall.size, center: CGPoint(x: testWall.size.width / 2, y: testWall.size.height / 2))
+        testWall.anchorPoint = CGPoint(x: 0.0, y: 0.0)
+        testWall.position = CGPoint(x: 7000, y: 0)
+        testWall.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
+        testWall.physicsBody?.isDynamic = false
+        self.camera = playerCamera
+        
+        playerCamera.addChild(pauseMenu)
+        playerCamera.addChild(pauseBtn)
+        addChild(playerRoot)
+        addChild(ground)
+        addChild(testWall)
     }
     
     func onMainMenuPressed(_ completion: @escaping () -> ()) {
         pauseMenu.onMainMenuPressed(completion)
     }
     
-    override func didMove(to view: SKView) {
-        
-        // Get label node from scene and store it for use later
-//        self.label = self.childNode(withName: "//helloLabel") as? SKLabelNode
-//        if let label = self.label {
-//            label.alpha = 0.0
-//            label.run(SKAction.fadeIn(withDuration: 2.0))
-//        }
-//
-//        // Create shape node to use during mouse interaction
-//        let w = (self.size.width + self.size.height) * 0.05
-//        self.spinnyNode = SKShapeNode.init(rectOf: CGSize.init(width: w, height: w), cornerRadius: w * 0.3)
-//
-//        if let spinnyNode = self.spinnyNode {
-//            spinnyNode.lineWidth = 2.5
-//
-//            spinnyNode.run(SKAction.repeatForever(SKAction.rotate(byAngle: CGFloat(Double.pi), duration: 1)))
-//            spinnyNode.run(SKAction.sequence([SKAction.wait(forDuration: 0.5),
-//                                              SKAction.fadeOut(withDuration: 0.5),
-//                                              SKAction.removeFromParent()]))
-//        }
-        
+    func touchDown(atPoint pos : CGPoint) {
 
     }
     
-    func touchDown(atPoint pos : CGPoint) {
-//        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-//            n.position = pos
-//            n.strokeColor = SKColor.green
-//            self.addChild(n)
-//        }
-    }
-    
     func touchMoved(toPoint pos : CGPoint) {
-//        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-//            n.position = pos
-//            n.strokeColor = SKColor.blue
-//            self.addChild(n)
-//        }
     }
     
-    func touchUp(atPoint pos : CGPoint) {
-//        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-//            n.position = pos
-//            n.strokeColor = SKColor.red
-//            self.addChild(n)
-//        }
+    func touchUp(_ t : UITouch) {
+        let pos = t.location(in:playerCamera)
+//        os_log("%@", type:.debug, pos.debugDescription)
+        
         if isPaused {
             if !pauseMenu.contains(pos) {
                 pauseMenu.isHidden = true
@@ -95,17 +146,19 @@ class GameScene: SKScene {
             }
             return
         }
-        
+
         if pauseBtn.contains(pos) {
             pauseMenu.isHidden = false
             isPaused = true
+            return
+        }
+        if !isInAir {
+            player.physicsBody?.velocity = CGVector(dx: 0.0, dy: 1750.0)
+            isInAir = true
         }
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        if let label = self.label {
-//            label.run(SKAction.init(named: "Pulse")!, withKey: "fadeInOut")
-//        }
         for t in touches { self.touchDown(atPoint: t.location(in: self)) }
     }
     
@@ -114,15 +167,36 @@ class GameScene: SKScene {
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
+        for t in touches { self.touchUp(t) }
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
+        for t in touches { self.touchUp(t) }
     }
     
     
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
     }
+    
+    override func didSimulatePhysics() {
+        super.didSimulatePhysics()
+        
+        playerGroundCheck.position = CGPoint(x: 0, y: 0)
+    }
 }
+
+extension GameScene: SKPhysicsContactDelegate {
+    func didBegin(_ contact: SKPhysicsContact) {
+        if contact.bodyA.categoryBitMask == PhysicsCategory.playerGroundCheck || contact.bodyB.categoryBitMask == PhysicsCategory.playerGroundCheck {
+            isInAir = false
+        }
+    }
+    
+    func didEnd(_ contact: SKPhysicsContact) {
+        if contact.bodyA.categoryBitMask == PhysicsCategory.playerGroundCheck || contact.bodyB.categoryBitMask == PhysicsCategory.playerGroundCheck {
+            isInAir = true
+        }
+    }
+}
+
