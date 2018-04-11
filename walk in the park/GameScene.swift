@@ -68,7 +68,7 @@ class GameScene: SKScene {
         pauseMenu.zPosition = 10
         
         pauseBtn.scale(to: CGSize(width: 50, height: 50))
-        pauseBtn.color = .white
+        pauseBtn.color = .black
         pauseBtn.colorBlendFactor = 1.0
         pauseBtn.zPosition = 5
 
@@ -126,6 +126,10 @@ class GameScene: SKScene {
     
     func onMainMenuPressed(_ completion: @escaping () -> ()) {
         pauseMenu.onMainMenuPressed(completion)
+    }
+    
+    func onGameOverPressed(_ completion: @escaping () -> ()) {
+        pauseMenu.onGameOverPressed(completion)
     }
     
     func touchDown(atPoint pos : CGPoint) {

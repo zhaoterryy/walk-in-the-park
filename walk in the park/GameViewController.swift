@@ -25,6 +25,12 @@ class GameViewController: UIViewController {
                 self.dismiss(animated: true)
             }
             
+            gameScene.onGameOverPressed { [unowned self] () in
+                if let sb = self.storyboard {
+                    let gameOverVc = sb.instantiateViewController(withIdentifier: "End")
+                    self.present(gameOverVc, animated: true)
+                }
+            }
             // Present the scene
             view.presentScene(gameScene)
             
