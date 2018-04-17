@@ -311,7 +311,7 @@
 				DEVELOPMENT_TEAM = LAS4V35B2R;
 				INFOPLIST_FILE = "walk in the park/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codex.walk-in-the-park";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ogura.walkinthepark;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -326,7 +326,7 @@
 				DEVELOPMENT_TEAM = LAS4V35B2R;
 				INFOPLIST_FILE = "walk in the park/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codex.walk-in-the-park";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ogura.walkinthepark;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

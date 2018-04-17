@@ -13,32 +13,7 @@ import GameplayKit
 class GameViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        if let view = self.view as! SKView? {
-            let gameScene = GameScene(size: view.bounds.size)
-            
-            // Set the scale mode to scale to fit the window
-            gameScene.scaleMode = .aspectFill
-            
-            gameScene.onMainMenuPressed { [unowned self] () in
-                self.dismiss(animated: true)
-            }
-            
-            gameScene.onGameOverPressed { [unowned self] () in
-                if let sb = self.storyboard {
-                    let gameOverVc = sb.instantiateViewController(withIdentifier: "End")
-                    self.present(gameOverVc, animated: true)
-                }
-            }
-            // Present the scene
-            view.presentScene(gameScene)
-            
-            view.ignoresSiblingOrder = true
-            
-            view.showsFPS = true
-            view.showsNodeCount = true
-            view.showsPhysics = true
-        }
+        initGameScene()
     }
     
     override var shouldAutorotate: Bool {
@@ -52,5 +27,41 @@ class GameViewController: UIViewController {
     
     override var prefersStatusBarHidden: Bool {
         return true
+    }
+    
+    func resetGame() {
+        initGameScene()
+    }
+    
+    private func initGameScene() {
+        if let view = self.view as! SKView? {
+            let gs = GameScene(size: view.bounds.size)
+            
+            // Set the scale mode to scale to fit the window
+            gs.scaleMode = .aspectFill
+            
+            gs.onMainMenuPressed { [unowned self] () in
+                self.dismiss(animated: true)
+            }
+            
+            gs.onGameOverPressed { [unowned self] (_ score:String) in
+                if let sb = self.storyboard {
+                    if let lvc = sb.instantiateViewController(withIdentifier: "End") as? LoseViewController {
+                        self.present(lvc, animated: true)
+                        if let lbl = lvc.lblTimer {
+                            lbl.text = "Score: " + score
+                        }
+                    }
+                }
+            }
+            // Present the scene
+            view.presentScene(gs)
+            
+            view.ignoresSiblingOrder = true
+            
+            view.showsFPS = true
+            view.showsNodeCount = true
+            view.showsPhysics = true
+        }
     }
 }

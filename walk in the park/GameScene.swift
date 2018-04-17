@@ -19,13 +19,14 @@ class GameScene: SKScene {
     private let ground: SKSpriteNode
     private let coin: SKSpriteNode
     private let scoreLabel: SKLabelNode
-    private var gameOverCallback : (()->())?
+    private var gameOverCallback : ((_ score:String)->())?
     
     private let wall1: Wall
     private let wall2: Wall
     
     private var isInAir: Bool = false
     private var score: Int = 0
+    private var elapsedTime: TimeInterval
     
     private let standingTextures : [SKTexture] = [
         SKTexture(image:#imageLiteral(resourceName: "s1")), SKTexture(image:#imageLiteral(resourceName: "s2")), SKTexture(image:#imageLiteral(resourceName: "s3")),
@@ -41,7 +42,7 @@ class GameScene: SKScene {
         static let worldStatic: UInt32 = 0x02
         static let playerGroundCheck: UInt32 = 0x04
         static let pickUp: UInt32 = 0x08
-        static let Boss: UInt32 = 0x16
+        static let wall: UInt32 = 0x16
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -56,6 +57,7 @@ class GameScene: SKScene {
         wall2 = Wall(coder: aDecoder)!
         coin = SKSpriteNode(coder: aDecoder)!
         scoreLabel = SKLabelNode(coder: aDecoder)!
+        elapsedTime = 0.0
         super.init(coder: aDecoder)
     }
     
@@ -68,17 +70,20 @@ class GameScene: SKScene {
         playerRoot = SKNode()
         playerGroundCheck = SKNode()
         wall1 = Wall()
-        wall1.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
-        wall1.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.Boss
+        wall1.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.wall
+        wall1.wallSprite.physicsBody?.categoryBitMask |= PhysicsCategory.worldStatic
+        wall1.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.pickUp
         wall2 = Wall()
-        wall2.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
-        wall2.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.Boss
+        wall2.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.wall
+        wall2.wallSprite.physicsBody?.categoryBitMask |= PhysicsCategory.worldStatic
+        wall2.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.pickUp
         coin = SKSpriteNode(imageNamed: "Coin")
         scoreLabel = SKLabelNode(text: nil)
+        elapsedTime = 0.0
         super.init(size: size)
         
         backgroundColor = .white
-        physicsWorld.gravity = CGVector(dx: 0.0, dy: -9.8)
+        physicsWorld.gravity = CGVector(dx: 0.0, dy: -50)
         physicsWorld.contactDelegate = self
         playerCamera.setScale(10.0)
         
@@ -128,7 +133,8 @@ class GameScene: SKScene {
         ground.anchorPoint = CGPoint(x: 0.0, y: 1.0)
         ground.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
         ground.physicsBody?.isDynamic = false
-        
+        ground.run(SKAction.repeatForever(SKAction.move(by: CGVector(dx: 1000.0, dy: 0.0), duration: 1.0)), withKey: "moving")
+
         coin.position = CGPoint(x:9000, y:250)
         coin.zPosition = -1
         coin.scale(to:CGSize(width: 425, height:500))
@@ -136,7 +142,8 @@ class GameScene: SKScene {
         coin.physicsBody?.categoryBitMask = PhysicsCategory.pickUp
         coin.physicsBody?.contactTestBitMask = PhysicsCategory.player
         coin.physicsBody?.collisionBitMask = 0
-        coin.physicsBody?.isDynamic = false
+        coin.physicsBody?.affectedByGravity = false
+        coin.physicsBody?.isDynamic = true
         
         scoreLabel.position = CGPoint(x:-310, y:175)
         scoreLabel.zPosition = 1
@@ -162,7 +169,7 @@ class GameScene: SKScene {
         pauseMenu.onMainMenuPressed(completion)
     }
     
-    func onGameOverPressed(_ completion: @escaping () -> ()) {
+    func onGameOverPressed(_ completion: @escaping (_ score:String) -> ()) {
         self.gameOverCallback = completion;
     }
     
@@ -191,7 +198,7 @@ class GameScene: SKScene {
             return
         }
         if !isInAir {
-            player.physicsBody?.velocity = CGVector(dx: 0.0, dy: 1750.0)
+            player.physicsBody?.velocity = CGVector(dx: 0.0, dy: 4000.0)
             isInAir = true
         }
     }
@@ -218,7 +225,6 @@ class GameScene: SKScene {
         checkDeath()
         checkWallInView(wall: wall1)
         checkWallInView(wall: wall2)
-        CheckOverlap()
         
         if (!playerCamera.contains(coin) && coin.position.x < playerRoot.position.x)
         {
@@ -227,16 +233,20 @@ class GameScene: SKScene {
         }
 
         playerRoot.action(forKey: "moving")?.speed += 0.001
+        ground.action(forKey: "moving")?.speed += 0.001
+        elapsedTime += currentTime
     }
     
     func CheckOverlap()
     {
-        
+        let MoveAction = SKAction.moveTo(x: coin.position.x + 1000, duration: 0)
+        coin.run(MoveAction)
+        print("uhoh")
     }
     
     func checkDeath() {
         if (playerRoot.position.x > 10000 && !playerCamera.contains(player) && gameOverCallback != nil) {
-            gameOverCallback!()
+            gameOverCallback!(score.description)
             gameOverCallback = nil
         }
     }
@@ -279,9 +289,9 @@ extension GameScene: SKPhysicsContactDelegate {
             }
         }
         
-        if contact.bodyA.contactTestBitMask == PhysicsCategory.Boss || contact.bodyB.contactTestBitMask == PhysicsCategory.Boss {
+        if contact.bodyA.categoryBitMask == PhysicsCategory.wall || contact.bodyB.categoryBitMask == PhysicsCategory.wall {
             if contact.bodyA.categoryBitMask == PhysicsCategory.pickUp || contact.bodyB.categoryBitMask == PhysicsCategory.pickUp {
-                print("BLAH")
+                CheckOverlap()
             }
         }
         
@@ -294,4 +304,3 @@ extension GameScene: SKPhysicsContactDelegate {
         }
     }
 }
-

@@ -10,18 +10,16 @@ import UIKit
 
 class LoseViewController: UIViewController {
     
-//    @IBAction func onStartBtnPressed(_ sender: UIButton) {
-//        if let sb = self.storyboard {
-//            let gvc = sb.instantiateViewController(withIdentifier: "Game")
-//            present(gvc, animated: true)
-//        }
-//    }
+    @IBOutlet var lblTimer: UILabel!
+    
     @IBAction func onMainMenuBtnPressed(_ sender: Any) {
-//        if let sb = self.storyboard {
         view.window!.rootViewController?.dismiss(animated: true)
-//        }
     }
+    
     @IBAction func onRetryBtnPressed(_ sender: Any) {
+        if let gvc = presentingViewController as? GameViewController {
+            gvc.resetGame()
+        }
         self.dismiss(animated: false)
     }
 }
