@@ -69,16 +69,16 @@ class GameScene: SKScene {
         playerGroundCheck = SKNode()
         wall1 = Wall()
         wall1.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
-        wall1.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.Boss
+        wall1.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.pickUp
         wall2 = Wall()
         wall2.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
-        wall2.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.Boss
+        wall2.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.pickUp
         coin = SKSpriteNode(imageNamed: "Coin")
         scoreLabel = SKLabelNode(text: nil)
         super.init(size: size)
         
         backgroundColor = .white
-        physicsWorld.gravity = CGVector(dx: 0.0, dy: -9.8)
+        physicsWorld.gravity = CGVector(dx: 0.0, dy: -50)
         physicsWorld.contactDelegate = self
         playerCamera.setScale(10.0)
         
@@ -92,7 +92,7 @@ class GameScene: SKScene {
 
         playerRoot.position = CGPoint(x: 3750, y: 0)
         playerRoot.run(SKAction.repeatForever(SKAction.move(by: CGVector(dx: 1000.0, dy: 0.0), duration: 1.0)), withKey: "moving")
-        playerRoot.physicsBody?.mass = 2;
+        playerRoot.physicsBody?.mass = 5;
         playerRoot.addChild(player)
         playerRoot.addChild(playerCamera)
         
@@ -191,7 +191,7 @@ class GameScene: SKScene {
             return
         }
         if !isInAir {
-            player.physicsBody?.velocity = CGVector(dx: 0.0, dy: 1750.0)
+            player.physicsBody?.velocity = CGVector(dx: 0.0, dy: 4000.0)
             isInAir = true
         }
     }
@@ -263,7 +263,7 @@ class GameScene: SKScene {
         playerGroundCheck.position = CGPoint(x: 0, y: 0)
     }
 }
-
+var _contactCount = 0
 extension GameScene: SKPhysicsContactDelegate {
     func didBegin(_ contact: SKPhysicsContact) {
         if contact.bodyA.categoryBitMask == PhysicsCategory.playerGroundCheck || contact.bodyB.categoryBitMask == PhysicsCategory.playerGroundCheck {
@@ -279,13 +279,11 @@ extension GameScene: SKPhysicsContactDelegate {
             }
         }
         
-        if contact.bodyA.contactTestBitMask == PhysicsCategory.Boss || contact.bodyB.contactTestBitMask == PhysicsCategory.Boss {
-            if contact.bodyA.categoryBitMask == PhysicsCategory.pickUp || contact.bodyB.categoryBitMask == PhysicsCategory.pickUp {
-                print("BLAH")
+        if contact.bodyA.categoryBitMask == PhysicsCategory.pickUp || contact.bodyB.categoryBitMask == PhysicsCategory.pickUp {
+            if contact.bodyA.categoryBitMask == PhysicsCategory.Boss || contact.bodyB.categoryBitMask == PhysicsCategory.Boss {
+                print("TIME")
             }
         }
-        
-       
     }
     
     func didEnd(_ contact: SKPhysicsContact) {
