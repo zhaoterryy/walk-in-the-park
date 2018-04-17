@@ -37,6 +37,10 @@ class GameScene: SKScene {
         SKTexture(image:#imageLiteral(resourceName: "w4")), SKTexture(image:#imageLiteral(resourceName: "w5")), SKTexture(image:#imageLiteral(resourceName: "w6"))
     ]
     
+    private let coinsnd = SKAction.playSoundFileNamed("coinsnd", waitForCompletion: false)
+    private let jumpsnd = SKAction.playSoundFileNamed("jumpsnd", waitForCompletion: false)
+    private let btnsnd = SKAction.playSoundFileNamed("btnsnd", waitForCompletion: false)
+    
     private struct PhysicsCategory {
         static let player: UInt32 = 0x01
         static let worldStatic: UInt32 = 0x02
@@ -163,6 +167,7 @@ class GameScene: SKScene {
         
         spawnJumpWall(wall: wall1)
         spawnJumpWall(wall: wall2, additionalOffset: 4000.0)
+        
     }
     
     func onMainMenuPressed(_ completion: @escaping () -> ()) {
@@ -195,10 +200,12 @@ class GameScene: SKScene {
         if pauseBtn.contains(pos) {
             pauseMenu.isHidden = false
             isPaused = true
+            run(btnsnd)
             return
         }
         if !isInAir {
             player.physicsBody?.velocity = CGVector(dx: 0.0, dy: 4000.0)
+            run(jumpsnd)
             isInAir = true
         }
     }
@@ -241,7 +248,6 @@ class GameScene: SKScene {
     {
         let MoveAction = SKAction.moveTo(x: coin.position.x + 1000, duration: 0)
         coin.run(MoveAction)
-        print("uhoh")
     }
     
     func checkDeath() {
@@ -286,6 +292,7 @@ extension GameScene: SKPhysicsContactDelegate {
                 scoreLabel.text = "Score:\(score)"
                 let MoveAction = SKAction.moveTo(x: playerRoot.position.x + 8000, duration: 0)
                 contact.bodyB.node?.run(MoveAction)
+                run(coinsnd)
             }
         }
         
