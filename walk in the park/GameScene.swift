@@ -17,7 +17,9 @@ class GameScene: SKScene {
     private let playerRoot: SKNode
     private let playerGroundCheck: SKNode
     private let ground: SKSpriteNode
-    private let testWall: SKSpriteNode
+    
+    private let wall1: Wall
+    private let wall2: Wall
     
     private var isInAir: Bool = false
     
@@ -42,9 +44,10 @@ class GameScene: SKScene {
         playerCamera = SKCameraNode(coder: aDecoder)!
         player = SKSpriteNode(coder: aDecoder)!
         ground = SKSpriteNode(coder: aDecoder)!
-        testWall = SKSpriteNode(coder: aDecoder)!
         playerRoot = SKNode(coder: aDecoder)!
         playerGroundCheck = SKNode(coder: aDecoder)!
+        wall1 = Wall(coder: aDecoder)!
+        wall2 = Wall(coder: aDecoder)!
         super.init(coder: aDecoder)
     }
     
@@ -54,9 +57,12 @@ class GameScene: SKScene {
         playerCamera = SKCameraNode()
         player = SKSpriteNode(texture: standingTextures[0])
         ground = SKSpriteNode(color: .brown, size: CGSize(width: 100000, height: 2500))
-        testWall = SKSpriteNode(color: .blue, size:CGSize(width: 600, height: 800))
         playerRoot = SKNode()
         playerGroundCheck = SKNode()
+        wall1 = Wall()
+        wall1.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
+        wall2 = Wall()
+        wall2.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
         super.init(size: size)
         
         backgroundColor = .white
@@ -109,19 +115,17 @@ class GameScene: SKScene {
         ground.anchorPoint = CGPoint(x: 0.0, y: 1.0)
         ground.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
         ground.physicsBody?.isDynamic = false
-
-        testWall.physicsBody = SKPhysicsBody(rectangleOf: testWall.size, center: CGPoint(x: testWall.size.width / 2, y: testWall.size.height / 2))
-        testWall.anchorPoint = CGPoint(x: 0.0, y: 0.0)
-        testWall.position = CGPoint(x: 7000, y: 0)
-        testWall.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
-        testWall.physicsBody?.isDynamic = false
-        self.camera = playerCamera
         
+        self.camera = playerCamera
         playerCamera.addChild(pauseMenu)
         playerCamera.addChild(pauseBtn)
         addChild(playerRoot)
         addChild(ground)
-        addChild(testWall)
+        addChild(wall1)
+        addChild(wall2)
+        
+        spawnJumpWall(wall: wall1)
+        spawnJumpWall(wall: wall2, additionalOffset: 4000.0)
     }
     
     func onMainMenuPressed(_ completion: @escaping () -> ()) {
@@ -181,6 +185,31 @@ class GameScene: SKScene {
     
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
+        checkDeath()
+        checkWallInView(wall: wall1)
+        checkWallInView(wall: wall2)
+    }
+    
+    func checkDeath() {
+        if (playerRoot.position.x > 10000 && !playerCamera.contains(playerRoot)) {
+            print("Dead!!!")
+        }
+    }
+    
+    func checkWallInView(wall: Wall) {
+        if (wall.isInView && wall.wallSprite.position.x < playerRoot.position.x - 3000) {
+            wall.isInView = false
+            spawnJumpWall(wall: wall)
+        }
+    }
+    
+    func spawnJumpWall(wall: Wall, additionalOffset: CGFloat = 0) {
+        let randSecs = arc4random_uniform(UInt32(3))
+        _ = Timer.scheduledTimer(withTimeInterval: Double(randSecs), repeats: false) { timer in
+            wall.wallSprite.position = CGPoint(x: self.playerRoot.position.x + 9000 + additionalOffset, y: 0)
+            wall.isInView = true;
+        }
+
     }
     
     override func didSimulatePhysics() {

@@ -17,6 +17,7 @@
 		1609F34D2059ACE9006F6CD2 /* ButtonNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1609F34C2059ACE9006F6CD2 /* ButtonNode.swift */; };
 		1609F34F205A24F1006F6CD2 /* PauseNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1609F34E205A24F1006F6CD2 /* PauseNode.swift */; };
 		16E80D8320694DAB008FFD47 /* LoseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E80D8220694DAB008FFD47 /* LoseViewController.swift */; };
+		18ADC9F02085522800F93783 /* Wall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18ADC9EF2085522800F93783 /* Wall.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		1609F34C2059ACE9006F6CD2 /* ButtonNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonNode.swift; sourceTree = "<group>"; };
 		1609F34E205A24F1006F6CD2 /* PauseNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PauseNode.swift; sourceTree = "<group>"; };
 		16E80D8220694DAB008FFD47 /* LoseViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoseViewController.swift; sourceTree = "<group>"; };
+		18ADC9EF2085522800F93783 /* Wall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wall.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +77,7 @@
 				1609F3322059735C006F6CD2 /* LaunchScreen.storyboard */,
 				1609F32720597289006F6CD2 /* Assets.xcassets */,
 				1609F32C20597289006F6CD2 /* Info.plist */,
+				18ADC9EF2085522800F93783 /* Wall.swift */,
 			);
 			path = "walk in the park";
 			sourceTree = "<group>";
@@ -156,6 +159,7 @@
 				1609F34F205A24F1006F6CD2 /* PauseNode.swift in Sources */,
 				16E80D8320694DAB008FFD47 /* LoseViewController.swift in Sources */,
 				1609F31B20597289006F6CD2 /* AppDelegate.swift in Sources */,
+				18ADC9F02085522800F93783 /* Wall.swift in Sources */,
 				1609F33720597742006F6CD2 /* MenuViewController.swift in Sources */,
 				1609F34D2059ACE9006F6CD2 /* ButtonNode.swift in Sources */,
 			);
