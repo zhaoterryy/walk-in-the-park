@@ -17,9 +17,15 @@ class GameScene: SKScene {
     private let playerRoot: SKNode
     private let playerGroundCheck: SKNode
     private let ground: SKSpriteNode
-    private let testWall: SKSpriteNode
+    private let coin: SKSpriteNode
+    private let scoreLabel: SKLabelNode
+    private var gameOverCallback : (()->())?
+    
+    private let wall1: Wall
+    private let wall2: Wall
     
     private var isInAir: Bool = false
+    private var score: Int = 0
     
     private let standingTextures : [SKTexture] = [
         SKTexture(image:#imageLiteral(resourceName: "s1")), SKTexture(image:#imageLiteral(resourceName: "s2")), SKTexture(image:#imageLiteral(resourceName: "s3")),
@@ -34,6 +40,8 @@ class GameScene: SKScene {
         static let player: UInt32 = 0x01
         static let worldStatic: UInt32 = 0x02
         static let playerGroundCheck: UInt32 = 0x04
+        static let pickUp: UInt32 = 0x08
+        static let Boss: UInt32 = 0x16
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -42,9 +50,12 @@ class GameScene: SKScene {
         playerCamera = SKCameraNode(coder: aDecoder)!
         player = SKSpriteNode(coder: aDecoder)!
         ground = SKSpriteNode(coder: aDecoder)!
-        testWall = SKSpriteNode(coder: aDecoder)!
         playerRoot = SKNode(coder: aDecoder)!
         playerGroundCheck = SKNode(coder: aDecoder)!
+        wall1 = Wall(coder: aDecoder)!
+        wall2 = Wall(coder: aDecoder)!
+        coin = SKSpriteNode(coder: aDecoder)!
+        scoreLabel = SKLabelNode(coder: aDecoder)!
         super.init(coder: aDecoder)
     }
     
@@ -54,9 +65,16 @@ class GameScene: SKScene {
         playerCamera = SKCameraNode()
         player = SKSpriteNode(texture: standingTextures[0])
         ground = SKSpriteNode(color: .brown, size: CGSize(width: 100000, height: 2500))
-        testWall = SKSpriteNode(color: .blue, size:CGSize(width: 600, height: 800))
         playerRoot = SKNode()
         playerGroundCheck = SKNode()
+        wall1 = Wall()
+        wall1.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
+        wall1.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.Boss
+        wall2 = Wall()
+        wall2.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
+        wall2.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.Boss
+        coin = SKSpriteNode(imageNamed: "Coin")
+        scoreLabel = SKLabelNode(text: nil)
         super.init(size: size)
         
         backgroundColor = .white
@@ -74,6 +92,7 @@ class GameScene: SKScene {
 
         playerRoot.position = CGPoint(x: 3750, y: 0)
         playerRoot.run(SKAction.repeatForever(SKAction.move(by: CGVector(dx: 1000.0, dy: 0.0), duration: 1.0)), withKey: "moving")
+        playerRoot.physicsBody?.mass = 2;
         playerRoot.addChild(player)
         playerRoot.addChild(playerCamera)
         
@@ -109,19 +128,34 @@ class GameScene: SKScene {
         ground.anchorPoint = CGPoint(x: 0.0, y: 1.0)
         ground.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
         ground.physicsBody?.isDynamic = false
-
-        testWall.physicsBody = SKPhysicsBody(rectangleOf: testWall.size, center: CGPoint(x: testWall.size.width / 2, y: testWall.size.height / 2))
-        testWall.anchorPoint = CGPoint(x: 0.0, y: 0.0)
-        testWall.position = CGPoint(x: 7000, y: 0)
-        testWall.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
-        testWall.physicsBody?.isDynamic = false
-        self.camera = playerCamera
         
+        coin.position = CGPoint(x:9000, y:250)
+        coin.zPosition = -1
+        coin.scale(to:CGSize(width: 425, height:500))
+        coin.physicsBody = SKPhysicsBody(circleOfRadius: 250)
+        coin.physicsBody?.categoryBitMask = PhysicsCategory.pickUp
+        coin.physicsBody?.contactTestBitMask = PhysicsCategory.player
+        coin.physicsBody?.collisionBitMask = 0
+        coin.physicsBody?.isDynamic = false
+        
+        scoreLabel.position = CGPoint(x:-310, y:175)
+        scoreLabel.zPosition = 1
+        scoreLabel.fontSize = CGFloat(30)
+        scoreLabel.fontColor = .black
+        scoreLabel.text = "Score: \(score)"
+        
+        self.camera = playerCamera
         playerCamera.addChild(pauseMenu)
         playerCamera.addChild(pauseBtn)
+        playerCamera.addChild(scoreLabel)
         addChild(playerRoot)
         addChild(ground)
-        addChild(testWall)
+        addChild(wall1)
+        addChild(wall2)
+        addChild(coin)
+        
+        spawnJumpWall(wall: wall1)
+        spawnJumpWall(wall: wall2, additionalOffset: 4000.0)
     }
     
     func onMainMenuPressed(_ completion: @escaping () -> ()) {
@@ -129,7 +163,7 @@ class GameScene: SKScene {
     }
     
     func onGameOverPressed(_ completion: @escaping () -> ()) {
-        pauseMenu.onGameOverPressed(completion)
+        self.gameOverCallback = completion;
     }
     
     func touchDown(atPoint pos : CGPoint) {
@@ -181,6 +215,46 @@ class GameScene: SKScene {
     
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
+        checkDeath()
+        checkWallInView(wall: wall1)
+        checkWallInView(wall: wall2)
+        CheckOverlap()
+        
+        if (!playerCamera.contains(coin) && coin.position.x < playerRoot.position.x)
+        {
+            let MoveAction = SKAction.moveTo(x: playerRoot.position.x + 8000, duration: 0)
+            coin.run(MoveAction)
+        }
+
+        playerRoot.action(forKey: "moving")?.speed += 0.001
+    }
+    
+    func CheckOverlap()
+    {
+        
+    }
+    
+    func checkDeath() {
+        if (playerRoot.position.x > 10000 && !playerCamera.contains(player) && gameOverCallback != nil) {
+            gameOverCallback!()
+            gameOverCallback = nil
+        }
+    }
+    
+    func checkWallInView(wall: Wall) {
+        if (wall.isInView && wall.wallSprite.position.x < playerRoot.position.x - 3000) {
+            wall.isInView = false
+            spawnJumpWall(wall: wall)
+        }
+    }
+    
+    func spawnJumpWall(wall: Wall, additionalOffset: CGFloat = 0) {
+        let randSecs = arc4random_uniform(UInt32(3))
+        _ = Timer.scheduledTimer(withTimeInterval: Double(randSecs), repeats: false) { timer in
+            wall.wallSprite.position = CGPoint(x: self.playerRoot.position.x + 9000 + additionalOffset, y: 0)
+            wall.isInView = true;
+        }
+
     }
     
     override func didSimulatePhysics() {
@@ -193,8 +267,25 @@ class GameScene: SKScene {
 extension GameScene: SKPhysicsContactDelegate {
     func didBegin(_ contact: SKPhysicsContact) {
         if contact.bodyA.categoryBitMask == PhysicsCategory.playerGroundCheck || contact.bodyB.categoryBitMask == PhysicsCategory.playerGroundCheck {
-            isInAir = false
+         isInAir = false
         }
+
+        if contact.bodyA.categoryBitMask == PhysicsCategory.player || contact.bodyB.categoryBitMask == PhysicsCategory.player {
+            if contact.bodyA.categoryBitMask == PhysicsCategory.pickUp || contact.bodyB.categoryBitMask == PhysicsCategory.pickUp {
+                score += 1
+                scoreLabel.text = "Score:\(score)"
+                let MoveAction = SKAction.moveTo(x: playerRoot.position.x + 8000, duration: 0)
+                contact.bodyB.node?.run(MoveAction)
+            }
+        }
+        
+        if contact.bodyA.contactTestBitMask == PhysicsCategory.Boss || contact.bodyB.contactTestBitMask == PhysicsCategory.Boss {
+            if contact.bodyA.categoryBitMask == PhysicsCategory.pickUp || contact.bodyB.categoryBitMask == PhysicsCategory.pickUp {
+                print("BLAH")
+            }
+        }
+        
+       
     }
     
     func didEnd(_ contact: SKPhysicsContact) {
