@@ -97,7 +97,7 @@ class GameScene: SKScene {
 
         playerRoot.position = CGPoint(x: 3750, y: 0)
         playerRoot.run(SKAction.repeatForever(SKAction.move(by: CGVector(dx: 1000.0, dy: 0.0), duration: 1.0)), withKey: "moving")
-        playerRoot.physicsBody?.mass = 2;
+        playerRoot.physicsBody?.mass = 5;
         playerRoot.addChild(player)
         playerRoot.addChild(playerCamera)
         
@@ -273,7 +273,7 @@ class GameScene: SKScene {
         playerGroundCheck.position = CGPoint(x: 0, y: 0)
     }
 }
-
+var _contactCount = 0
 extension GameScene: SKPhysicsContactDelegate {
     func didBegin(_ contact: SKPhysicsContact) {
         if contact.bodyA.categoryBitMask == PhysicsCategory.playerGroundCheck || contact.bodyB.categoryBitMask == PhysicsCategory.playerGroundCheck {
@@ -294,8 +294,6 @@ extension GameScene: SKPhysicsContactDelegate {
                 CheckOverlap()
             }
         }
-        
-       
     }
     
     func didEnd(_ contact: SKPhysicsContact) {
