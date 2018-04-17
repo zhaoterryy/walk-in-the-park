@@ -18,6 +18,7 @@
 		1609F34F205A24F1006F6CD2 /* PauseNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1609F34E205A24F1006F6CD2 /* PauseNode.swift */; };
 		16E80D8320694DAB008FFD47 /* LoseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E80D8220694DAB008FFD47 /* LoseViewController.swift */; };
 		18ADC9F02085522800F93783 /* Wall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18ADC9EF2085522800F93783 /* Wall.swift */; };
+		18D241C120863A46004A4F92 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D241C020863A46004A4F92 /* GameKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		1609F34E205A24F1006F6CD2 /* PauseNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PauseNode.swift; sourceTree = "<group>"; };
 		16E80D8220694DAB008FFD47 /* LoseViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoseViewController.swift; sourceTree = "<group>"; };
 		18ADC9EF2085522800F93783 /* Wall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wall.swift; sourceTree = "<group>"; };
+		18D241C020863A46004A4F92 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,6 +43,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				18D241C120863A46004A4F92 /* GameKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -52,6 +55,7 @@
 			children = (
 				1609F31820597289006F6CD2 /* Products */,
 				1609F31920597289006F6CD2 /* walk in the park */,
+				18D241BD20863A3E004A4F92 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -80,6 +84,14 @@
 				18ADC9EF2085522800F93783 /* Wall.swift */,
 			);
 			path = "walk in the park";
+			sourceTree = "<group>";
+		};
+		18D241BD20863A3E004A4F92 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				18D241C020863A46004A4F92 /* GameKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -115,6 +127,11 @@
 					1609F31620597289006F6CD2 = {
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.GameCenter.iOS = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -291,6 +308,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = D45T47H5NY;
 				INFOPLIST_FILE = "walk in the park/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.ogura.walk-in-the-park";
@@ -305,6 +323,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = D45T47H5NY;
 				INFOPLIST_FILE = "walk in the park/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.ogura.walk-in-the-park";

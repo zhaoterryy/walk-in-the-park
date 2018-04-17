@@ -19,6 +19,7 @@ class GameScene: SKScene {
     private let ground: SKSpriteNode
     private let coin: SKSpriteNode
     private let scoreLabel: SKLabelNode
+    private var gameOverCallback : (()->())?
     
     private let wall1: Wall
     private let wall2: Wall
@@ -40,6 +41,7 @@ class GameScene: SKScene {
         static let worldStatic: UInt32 = 0x02
         static let playerGroundCheck: UInt32 = 0x04
         static let pickUp: UInt32 = 0x08
+        static let Boss: UInt32 = 0x16
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -67,10 +69,12 @@ class GameScene: SKScene {
         playerGroundCheck = SKNode()
         wall1 = Wall()
         wall1.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
+        wall1.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.Boss
         wall2 = Wall()
         wall2.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.worldStatic
+        wall2.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.Boss
         coin = SKSpriteNode(imageNamed: "Coin")
-        scoreLabel = SKLabelNode(fontNamed: "Times New Roman")
+        scoreLabel = SKLabelNode(text: nil)
         super.init(size: size)
         
         backgroundColor = .white
@@ -88,6 +92,7 @@ class GameScene: SKScene {
 
         playerRoot.position = CGPoint(x: 3750, y: 0)
         playerRoot.run(SKAction.repeatForever(SKAction.move(by: CGVector(dx: 1000.0, dy: 0.0), duration: 1.0)), withKey: "moving")
+        playerRoot.physicsBody?.mass = 2;
         playerRoot.addChild(player)
         playerRoot.addChild(playerCamera)
         
@@ -158,7 +163,7 @@ class GameScene: SKScene {
     }
     
     func onGameOverPressed(_ completion: @escaping () -> ()) {
-        pauseMenu.onGameOverPressed(completion)
+        self.gameOverCallback = completion;
     }
     
     func touchDown(atPoint pos : CGPoint) {
@@ -213,17 +218,26 @@ class GameScene: SKScene {
         checkDeath()
         checkWallInView(wall: wall1)
         checkWallInView(wall: wall2)
+        CheckOverlap()
         
         if (!playerCamera.contains(coin) && coin.position.x < playerRoot.position.x)
         {
             let MoveAction = SKAction.moveTo(x: playerRoot.position.x + 8000, duration: 0)
             coin.run(MoveAction)
         }
+
+        playerRoot.action(forKey: "moving")?.speed += 0.001
+    }
+    
+    func CheckOverlap()
+    {
+        
     }
     
     func checkDeath() {
-        if (playerRoot.position.x > 10000 && !playerCamera.contains(player)) {
-            
+        if (playerRoot.position.x > 10000 && !playerCamera.contains(player) && gameOverCallback != nil) {
+            gameOverCallback!()
+            gameOverCallback = nil
         }
     }
     
@@ -264,6 +278,14 @@ extension GameScene: SKPhysicsContactDelegate {
                 contact.bodyB.node?.run(MoveAction)
             }
         }
+        
+        if contact.bodyA.contactTestBitMask == PhysicsCategory.Boss || contact.bodyB.contactTestBitMask == PhysicsCategory.Boss {
+            if contact.bodyA.categoryBitMask == PhysicsCategory.pickUp || contact.bodyB.categoryBitMask == PhysicsCategory.pickUp {
+                print("BLAH")
+            }
+        }
+        
+       
     }
     
     func didEnd(_ contact: SKPhysicsContact) {
