@@ -67,7 +67,7 @@ class GameScene: SKScene {
     
     override init(size: CGSize) {
         pauseMenu = SKPauseNode()
-        pauseBtn = SKSpriteNode(imageNamed: "MenuButton")
+        pauseBtn = SKSpriteNode(texture: SKTexture(image:#imageLiteral(resourceName: "MenuButton")))
         playerCamera = SKCameraNode()
         player = SKSpriteNode(texture: standingTextures[0])
         ground = SKSpriteNode(color: .brown, size: CGSize(width: 100000, height: 2500))
@@ -81,7 +81,7 @@ class GameScene: SKScene {
         wall2.wallSprite.physicsBody?.categoryBitMask = PhysicsCategory.wall
         wall2.wallSprite.physicsBody?.categoryBitMask |= PhysicsCategory.worldStatic
         wall2.wallSprite.physicsBody?.contactTestBitMask = PhysicsCategory.pickUp
-        coin = SKSpriteNode(imageNamed: "Coin")
+        coin = SKSpriteNode(texture: SKTexture(image:#imageLiteral(resourceName: "Star")))
         scoreLabel = SKLabelNode(text: nil)
         elapsedTime = 0.0
         super.init(size: size)

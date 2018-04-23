@@ -58,10 +58,6 @@ class GameViewController: UIViewController {
             view.presentScene(gs)
             
             view.ignoresSiblingOrder = true
-            
-            view.showsFPS = true
-            view.showsNodeCount = true
-            view.showsPhysics = true
         }
     }
 }
